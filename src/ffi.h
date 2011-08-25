@@ -13,8 +13,8 @@
 #else
 #include <ffi.h>
 #endif
-#include <node/eio.h>
-#include <node/node_events.h>
+#include <eio.h>
+#include <node_events.h>
 #include <node_object_wrap.h>
 #include <node.h>
 #include <pthread.h>
@@ -39,7 +39,7 @@ class Pointer : public ObjectWrap {
     public:
         Pointer(unsigned char *ptr);
         ~Pointer();
-        
+
         static void Initialize(Handle<Object> Target);
         static Handle<Object> WrapInstance(Pointer *inst);
         static Handle<Object> WrapPointer(unsigned char *ptr);
@@ -47,7 +47,7 @@ class Pointer : public ObjectWrap {
         void MovePointer(int bytes);
         void Alloc(size_t bytes);
         void Free();
-        
+
     protected:
         static Handle<Value> New(const Arguments& args);
         static Handle<Value> Seek(const Arguments& args);
@@ -76,10 +76,10 @@ class Pointer : public ObjectWrap {
         static Handle<Value> PutCString(const Arguments& args);
         static Handle<Value> GetCString(const Arguments& args);
         static Handle<Value> IsNull(const Arguments& args);
-        
+
         static Handle<Value> GetAddress(Local<String> name, const AccessorInfo& info);
         static Handle<Value> GetAllocated(Local<String> name, const AccessorInfo& info);
-        
+
     private:
         static Persistent<FunctionTemplate> pointer_template;
         static Handle<FunctionTemplate> MakeTemplate();
@@ -111,20 +111,20 @@ class ForeignCaller : public ObjectWrap {
         ForeignCaller();
         ~ForeignCaller();
         static void Initialize(Handle<Object> Target);
-        
+
     protected:
         static Handle<Value> New(const Arguments& args);
         static Handle<Value> Exec(const Arguments& args);
         static int AsyncFFICall(eio_req *req);
         static int FinishAsyncFFICall(eio_req *req);
-        
+
         ffi_cif *m_cif;
         void (*m_fn)(void);
         void *m_res;
         void **m_fnargs;
-        
+
         bool m_async;
-                
+
     private:
         static Persistent<FunctionTemplate> foreign_caller_template;
         static Handle<FunctionTemplate> MakeTemplate();
@@ -139,7 +139,7 @@ class CallbackInfo : public ObjectWrap {
         static void Initialize(Handle<Object> Target);
         Handle<Value> GetPointerObject();
         static void WatcherCallback(EV_P_ ev_async *w, int revents);
-        
+
     protected:
         static void DispatchToV8(CallbackInfo *self, void *retval, void **parameters);
         static Handle<Value> New(const Arguments& args);
@@ -154,7 +154,7 @@ class CallbackInfo : public ObjectWrap {
         static pthread_mutex_t  g_queue_mutex;
         static std::queue<ThreadedCallbackInvokation *> g_queue;
         static ev_async         g_async;
-        
+
         void                    *m_closure;
         Persistent<Function>    m_function;
         Handle<Object>          m_this;
@@ -164,14 +164,14 @@ class ThreadedCallbackInvokation {
     public:
         ThreadedCallbackInvokation(CallbackInfo *cbinfo, void *retval, void **parameters);
         ~ThreadedCallbackInvokation();
-        
+
         void SignalDoneExecuting();
         void WaitForExecution();
 
         void *m_retval;
         void **m_parameters;
         CallbackInfo *m_cbinfo;
-        
+
     private:
         pthread_cond_t m_cond;
         pthread_mutex_t m_mutex;
